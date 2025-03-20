@@ -1,6 +1,6 @@
 import unittest
 import numpy as np
-import bananas.nas_encodings as encoding
+import bananas.encodings.nas_encodings as encoding
 
 class MyTestCase(unittest.TestCase):
     def test_adj_encoding(self):
