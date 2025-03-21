@@ -12,7 +12,7 @@
 # DAG 클래스 / 생성자 (입력)
 # 인코딩
 # 성능평가 -> 일단 집어넣고 나중에 추상화해서 확장 ㄱㄱ
-import random
+import numpy as np
 
 class ProbabilisticDAGGenerator:
     def __init__(self, num_nodes, edge_prob, start_node=1, end_node=None):
@@ -30,13 +30,22 @@ class ProbabilisticDAGGenerator:
 
     def generate_dags(self, num_edges):
         " 엣지 개수 만큼 확률적으로 연결하기"
-        possible_edges = [(i, j) for i in range(1, self.num_nodes + 1) for j in range(i + 1, self.num_nodes + 1)]
-        edges = random.sample(possible_edges, num_edges)
-        graph = {i: [] for i in range(1, self.num_nodes + 1)}
-        for u, v in edges:
-            graph[u].append(v)
-        return graph
+        i, j = np.triu_indices(self.num_nodes, k = 1)
+        possible_edges = np.column_stack((i + 1, j + 1))
 
+        sampled_indices = np.random.choice(len(possible_edges), size=num_edges, replace=False)
+        edges = possible_edges[sampled_indices]
+
+        from collections import defaultdict
+        graph = defaultdict(list)
+
+        unique_nodes, inverse_indices = np.unique(edges[:, 0], return_inverse=True)
+        split_edges = np.split(edges[:, 1], np.cumsum(np.bincount(inverse_indices)))
+
+        for node, neighbors in zip(unique_nodes, split_edges):
+            graph[node] = neighbors.tolist()
+
+        return dict(graph)
 
 
 
